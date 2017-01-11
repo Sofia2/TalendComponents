@@ -1,0 +1,42 @@
+<%@ jet 
+	imports="
+		org.talend.core.model.process.INode 
+		org.talend.core.model.process.ElementParameterParser 
+		org.talend.core.model.metadata.IMetadataTable 
+		org.talend.core.model.metadata.IMetadataColumn 
+		org.talend.core.model.process.IConnection
+		org.talend.core.model.process.IConnectionCategory
+		org.talend.designer.codegen.config.CodeGeneratorArgument
+		org.talend.core.model.metadata.types.JavaTypesManager
+		org.talend.core.model.metadata.types.JavaType
+		java.util.List 
+    	java.util.Map		
+	" 
+%>
+	com.indra.sofia2.ssap.kp.implementations.mqtt.KpMQTTClient kp_<%=cid%> =
+		(com.indra.sofia2.ssap.kp.implementations.mqtt.KpMQTTClient) globalMap.get("kp_<%=connection%>");
+	String sessionKey_<%=cid%> = (String) globalMap.get("sessionKey_<%=connection%>");
+
+	com.indra.sofia2.ssap.ssap.SSAPMessage leaveRequest_<%=cid%> =
+		com.indra.sofia2.ssap.kp.SSAPMessageGenerator.getInstance().generateLeaveMessage(sessionKey_<%=cid%>);
+	com.indra.sofia2.ssap.ssap.SSAPMessage leaveResponse_<%=cid%>;
+	com.indra.sofia2.ssap.ssap.body.SSAPBodyReturnMessage leaveResponseBody_<%=cid%> = null;
+	try {
+		leaveResponse_<%=cid%> = kp_<%=cid%>.send(leaveRequest_<%=cid%>);
+		leaveResponseBody_<%=cid%> =
+			com.indra.sofia2.ssap.ssap.body.SSAPBodyReturnMessage.fromJsonToSSAPBodyReturnMessage(leaveResponse_<%=cid%>.getBody());
+	} catch (com.indra.sofia2.ssap.kp.exceptions.ConnectionToSIBException e_<%=cid%>) {
+		e_<%=cid%>.printStackTrace();
+		throw e_<%=cid%>;
+	}
+	
+	if (!leaveResponseBody_<%=cid%>.isOk()){
+		throw new com.indra.sofia2.ssap.kp.exceptions.ConnectionToSIBException("Couldn't Leave SSAP "+leaveResponseBody_<%=cid%>.getData().toString());
+	}
+		
+	if(kp_<%=cid%>.isPhysicalConnectionEstablished())
+		kp_<%=cid%>.disconnect();
+	System.out.println("Disconnected from Sofia2");
+
+	globalMap.remove("kp_<%=connection%>");
+	globalMap.remove("sessionKey_<%=connection%>");

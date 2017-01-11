@@ -1,0 +1,47 @@
+<%@ jet 
+	imports="
+		org.talend.core.model.process.INode 
+		org.talend.core.model.process.ElementParameterParser 
+		org.talend.core.model.metadata.IMetadataTable 
+		org.talend.core.model.metadata.IMetadataColumn 
+		org.talend.core.model.process.IConnection
+		org.talend.core.model.process.IConnectionCategory
+		org.talend.designer.codegen.config.CodeGeneratorArgument
+		org.talend.core.model.metadata.types.JavaTypesManager
+		org.talend.core.model.metadata.types.JavaType
+		java.util.List 
+    	java.util.Map		
+	" 
+%>
+<% 
+    CodeGeneratorArgument codeGenArgument = (CodeGeneratorArgument) argument;
+    INode node = (INode)codeGenArgument.getArgument();
+    String cid = node.getUniqueName();	
+
+	boolean useExisistingConnection = "true".equals(ElementParameterParser.getValue(node, "__USE_EXISTING_CONNECTION__"));
+
+	String ontology = ElementParameterParser.getValue(node, "__ONTOLOGY__");
+	String connection = useExisistingConnection ? ElementParameterParser.getValue(node, "__CONNECTION__") : cid;
+%>
+	com.indra.sofia2.ssap.kp.implementations.mqtt.KpMQTTClient kp_<%=cid%> =
+		(com.indra.sofia2.ssap.kp.implementations.mqtt.KpMQTTClient) globalMap.get("kp_<%=connection%>");
+	String sessionKey_<%=cid%> = (String) globalMap.get("sessionKey_<%=connection%>");
+	String idSubscription_<%=cid%> = (String) globalMap.get("idSubscription_<%=cid%>");
+
+	com.indra.sofia2.ssap.ssap.SSAPMessage msgUnsubscribe_<%=cid%> =
+		com.indra.sofia2.ssap.kp.SSAPMessageGenerator.getInstance().generateUnsubscribeMessage(
+			sessionKey_<%=cid%>
+			, <%=ontology%>
+			, idSubscription_<%=cid%>
+		);
+
+	//Envia el mensaje UNSUBSCRIBE al SIB
+	com.indra.sofia2.ssap.ssap.SSAPMessage respUnsubscribe_<%=cid%> = kp_<%=cid%>.send(msgUnsubscribe_<%=cid%>);
+
+<%
+ 	if (!useExisistingConnection){ 
+%>
+	<%@ include file="../tSofia2Template/leave_template.javajet"%>
+<% 	} %>
+
+

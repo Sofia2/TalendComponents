@@ -1,0 +1,233 @@
+<COMPONENT> 
+  <HEADER
+    PLATEFORM="ALL"
+    SERIAL=""
+    VERSION="0.001"
+    STATUS="ALPHA"
+
+    COMPATIBILITY="ALL"
+    AUTHOR="Minsait"
+    RELEASE_DATE="201700110A"
+    STARTABLE="true"
+    LOG4J_ENABLED="true"
+  >
+    <SIGNATURE/>
+  </HEADER>
+
+  <FAMILIES> 
+    <FAMILY>Big Data/Sofia2</FAMILY> 
+  </FAMILIES>
+  
+  <DOCUMENTATION> 
+    <URL/>
+  </DOCUMENTATION>
+  
+  <CONNECTORS>
+    <CONNECTOR CTYPE="FLOW" MAX_INPUT="0" MAX_OUTPUT="1"/>
+    <CONNECTOR CTYPE="ITERATE" MAX_OUTPUT="1" MAX_INPUT="1"/>
+    <CONNECTOR CTYPE="SUBJOB_OK" MAX_INPUT="1" />
+    <CONNECTOR CTYPE="SUBJOB_ERROR" MAX_INPUT="1" />
+    <CONNECTOR CTYPE="COMPONENT_OK"/>
+    <CONNECTOR CTYPE="COMPONENT_ERROR"/>
+    <CONNECTOR CTYPE="RUN_IF"/>
+  </CONNECTORS>
+  
+  <PARAMETERS> 
+    <PARAMETER
+      NAME="USE_EXISTING_CONNECTION"
+      FIELD="CHECK"
+      NUM_ROW="10"
+		GROUP="CONNECTION"
+    >
+      <DEFAULT>false</DEFAULT>
+    </PARAMETER>
+    <PARAMETER
+      NAME="CONNECTION"
+      FIELD="COMPONENT_LIST"
+      REQUIRED="true" FILTER="tSofia2Connection"
+      NUM_ROW="10"
+      SHOW_IF="USE_EXISTING_CONNECTION == 'true'"
+      DYNAMIC_SETTINGS="true"
+		GROUP="CONNECTION"
+    />
+    <PARAMETER
+    	NAME="HOST"
+    	FIELD="TEXT"
+    	NUM_ROW="15"
+    	REQUIRED="true"
+     	SHOW_IF="USE_EXISTING_CONNECTION == 'false'"
+		GROUP="CONNECTION"
+    >
+    	<DEFAULT>"sofia2.com"</DEFAULT>
+    </PARAMETER> 
+    <PARAMETER
+    	NAME="PORT"
+    	FIELD="TEXT"
+    	NUM_ROW="15"
+    	REQUIRED="true"
+     	SHOW_IF="USE_EXISTING_CONNECTION == 'false'"
+		GROUP="CONNECTION"
+    >
+    	<DEFAULT>"1880"</DEFAULT>
+    </PARAMETER> 
+    <PARAMETER
+    	NAME="KP"
+    	FIELD="TEXT"
+    	NUM_ROW="20"
+    	REQUIRED="true"
+     	SHOW_IF="USE_EXISTING_CONNECTION == 'false'"
+		GROUP="CONNECTION"
+    >
+    	<DEFAULT>"KPClass"</DEFAULT>
+    </PARAMETER> 
+    <PARAMETER
+    	NAME="KP_INSTANCE"
+    	FIELD="TEXT"
+    	NUM_ROW="20"
+    	REQUIRED="true"
+     	SHOW_IF="USE_EXISTING_CONNECTION == 'false'"
+		GROUP="CONNECTION"
+    >
+    	<DEFAULT>"KPClass:KPInstance"</DEFAULT>
+    </PARAMETER>
+    
+    <PARAMETER
+    	NAME="TOKEN"
+    	FIELD="TEXT"
+    	NUM_ROW="25"
+    	REQUIRED="true"
+     	SHOW_IF="USE_EXISTING_CONNECTION == 'false'"
+		GROUP="CONNECTION"
+    >
+    	<DEFAULT>""</DEFAULT>
+    </PARAMETER>
+    
+	<PARAMETER
+		NAME="SUBSCRIPTION_TYPE"
+		FIELD="CLOSED_LIST"
+		NUM_ROW="30"
+		>
+		<ITEMS DEFAULT="ONTOLOGY">
+			<ITEM NAME="ONTOLOGY" VALUE="ONTOLOGY" />
+			<ITEM NAME="QUERY" VALUE="QUERY" />
+			<ITEM NAME="CEP" VALUE="CEP" />
+		</ITEMS>
+	</PARAMETER>
+    
+    <PARAMETER
+      NAME="LOOP_TIMEOUT"
+      FIELD="TEXT"
+      NUM_ROW="30"
+     	SHOW_IF="INFINITE_LOOP == 'false'"
+    >
+      <DEFAULT>10*60</DEFAULT>
+    </PARAMETER>
+
+    <PARAMETER
+      NAME="INFINITE_LOOP"
+      FIELD="CHECK"
+      NUM_ROW="30"
+    >
+      <DEFAULT>true</DEFAULT>
+    </PARAMETER>
+    
+    <PARAMETER
+      NAME="ONTOLOGY"
+      FIELD="TEXT"
+      NUM_ROW="40"
+      REQUIRED="true"
+    >
+      <DEFAULT>"TestSensorTemperatura"</DEFAULT>
+    </PARAMETER>
+    
+    <PARAMETER
+      NAME="CEP"
+      FIELD="TEXT"
+      NUM_ROW="40"
+      REQUIRED="true"
+      SHOW_IF="SUBSCRIPTION_TYPE == 'CEP'"
+    >
+      <DEFAULT>"CEP"</DEFAULT>
+    </PARAMETER>
+    
+    <PARAMETER
+      NAME="QUERY"
+      FIELD="MEMO_SQL"
+      NUM_ROW="45"
+      REQUIRED="true"
+      SHOW_IF="SUBSCRIPTION_TYPE == 'QUERY'"
+    >
+      <DEFAULT>"select * from TestSensorTemperatura"</DEFAULT>
+    </PARAMETER>
+    
+    <PARAMETER
+      NAME="SCHEMA"
+      FIELD="SCHEMA_TYPE"
+      NUM_ROW="50"
+    >
+		<TABLE READONLY="true">
+			<COLUMN NAME="content" TYPE="id_Object" READONLY="true"/>
+		</TABLE>
+    </PARAMETER>
+  </PARAMETERS>
+  
+  <ADVANCED_PARAMETERS>
+  	<PARAMETER
+  		NAME="KEEP_ALIVE"
+  		FIELD="TEXT"
+  		NUM_ROW="10"
+  		REQUIRED="true"
+     	SHOW_IF="USE_EXISTING_CONNECTION == 'false'"
+		GROUP="CONNECTION"
+  	>
+  		<DEFAULT>5</DEFAULT>
+  	</PARAMETER>
+  	<PARAMETER
+  		NAME="SIB_TIMEOUT"
+  		FIELD="TEXT"
+  		NUM_ROW="20"
+  		REQUIRED="true"
+     	SHOW_IF="USE_EXISTING_CONNECTION == 'false'"
+		GROUP="CONNECTION"
+  	>
+  		<DEFAULT>6000</DEFAULT>
+  	</PARAMETER>
+  	<PARAMETER
+  		NAME="RESPONSE_TIMEOUT"
+  		FIELD="TEXT"
+  		NUM_ROW="20"
+  		REQUIRED="true"
+     	SHOW_IF="USE_EXISTING_CONNECTION == 'false'"
+		GROUP="CONNECTION"
+  	>
+  		<DEFAULT>6000</DEFAULT>
+  	</PARAMETER>
+  	<PARAMETER
+  		NAME="REFRESH_TIME"
+  		FIELD="TEXT"
+  		NUM_ROW="30"
+  		REQUIRED="true"
+  	>
+  		<DEFAULT>100</DEFAULT>
+  	</PARAMETER>
+  	<PARAMETER
+  		NAME="BUFFER_SIZE"
+  		FIELD="TEXT"
+  		NUM_ROW="30"
+  		REQUIRED="true"
+  	>
+  		<DEFAULT>100</DEFAULT>
+  	</PARAMETER>
+  </ADVANCED_PARAMETERS>
+
+  <CODEGENERATION> 
+    <IMPORTS> 
+      <IMPORT MODULE="client-api-standalone.jar" NAME="client-api-standalone" REQUIRED="true"/>
+    </IMPORTS> 
+  </CODEGENERATION>
+  
+   <RETURNS>
+      <RETURN NAME="NB_LINE" TYPE="id_Integer" AVAILABILITY="AFTER"/>
+   </RETURNS>
+   
+</COMPONENT>

@@ -1,0 +1,79 @@
+<%@ jet 
+	imports="
+		org.talend.core.model.process.INode 
+		org.talend.core.model.process.ElementParameterParser 
+		org.talend.core.model.metadata.IMetadataTable 
+		org.talend.core.model.metadata.IMetadataColumn 
+		org.talend.core.model.process.IConnection
+		org.talend.core.model.process.IConnectionCategory
+		org.talend.designer.codegen.config.CodeGeneratorArgument
+		org.talend.core.model.metadata.types.JavaTypesManager
+		org.talend.core.model.metadata.types.JavaType
+		java.util.List 
+    	java.util.Map		
+	" 
+%>
+<% 
+    CodeGeneratorArgument codeGenArgument = (CodeGeneratorArgument) argument;
+    INode node = (INode)codeGenArgument.getArgument();
+    String cid = node.getUniqueName();	
+%>
+<%
+	boolean useExisistingConnection = "true".equals(ElementParameterParser.getValue(node, "__USE_EXISTING_CONNECTION__"));
+ 	if (useExisistingConnection){ 
+		String connection = ElementParameterParser.getValue(node, "__CONNECTION__");
+%>
+	com.indra.sofia2.ssap.kp.implementations.mqtt.KpMQTTClient kp_<%=cid%> =
+		(com.indra.sofia2.ssap.kp.implementations.mqtt.KpMQTTClient) globalMap.get("kp_<%=connection%>");
+	String sessionKey_<%=cid%> = (String) globalMap.get("sessionKey_<%=connection%>")	;
+
+<% 	} else { %>
+	<%@ include file="../tSofia2Template/join_template.javajet"%>
+<% 	} %>
+
+<%
+	String ontology = ElementParameterParser.getValue(node, "__ONTOLOGY__");
+	String query = ElementParameterParser.getValue(node, "__QUERY__");
+
+	java.util.List<IMetadataColumn> columnList = null;
+	java.util.List<IMetadataTable> metadatas = node.getMetadataList();
+	if(metadatas != null && metadatas.size() > 0) {
+		IMetadataTable metadata = metadatas.get(0);
+		if(metadata != null) {
+		    columnList = metadata.getListColumns();
+		}
+	}
+	java.util.List< ? extends IConnection> outgoingConns = node.getOutgoingSortedConnections();
+	if(columnList!=null && outgoingConns!=null && outgoingConns.size()>0) {
+		for(IConnection outgoingConn : outgoingConns) {
+			if(outgoingConn.getLineStyle().hasConnectionCategory(IConnectionCategory.DATA)) {
+
+%>
+	com.indra.sofia2.ssap.ssap.SSAPMessage queryMessage_<%=cid%> =
+		com.indra.sofia2.ssap.kp.SSAPMessageGenerator.getInstance()
+			.generateQueryMessage(sessionKey_<%=cid%>, <%=ontology%>, <%=query%>, com.indra.sofia2.ssap.ssap.SSAPQueryType.SQLLIKE);
+	com.indra.sofia2.ssap.ssap.body.SSAPBodyReturnMessage queryResponseBody_<%=cid%> = null;
+	try {
+		com.indra.sofia2.ssap.ssap.SSAPMessage queryResponse_<%=cid%> = kp_<%=cid%>.send(queryMessage_<%=cid%>);
+		queryResponseBody_<%=cid%> =
+			com.indra.sofia2.ssap.ssap.body.SSAPBodyReturnMessage.fromJsonToSSAPBodyReturnMessage(queryResponse_<%=cid%>.getBody());
+	
+		if(queryResponseBody_<%=cid%>.isOk()) {
+			//System.out.println("Operation success with response: " + queryResponseBody_<%=cid%>.getData());
+			<%=outgoingConn.getName()%>.<%=columnList.get(0).getLabel()%> = queryResponseBody_<%=cid%>.getData();
+		
+		}
+		else {
+			throw new com.indra.sofia2.ssap.kp.exceptions.ConnectionToSIBException(queryResponseBody_<%=cid%>.getError());
+		}
+			
+	} catch (com.indra.sofia2.ssap.kp.exceptions.ConnectionToSIBException e_<%=cid%>) {
+		System.err.println("ERROR: Could not query sofia2");
+		e_<%=cid%>.printStackTrace();
+		throw e_<%=cid%>;
+	} 
+<%
+			}
+		}
+	}
+%>

@@ -1,0 +1,72 @@
+<%@ jet 
+	imports="
+		org.talend.core.model.process.INode 
+		org.talend.core.model.process.ElementParameterParser 
+		org.talend.core.model.metadata.IMetadataTable 
+		org.talend.core.model.metadata.IMetadataColumn 
+		org.talend.core.model.process.IConnection
+		org.talend.core.model.process.IConnectionCategory
+		org.talend.designer.codegen.config.CodeGeneratorArgument
+		org.talend.core.model.metadata.types.JavaTypesManager
+		org.talend.core.model.metadata.types.JavaType
+		java.util.List 
+    	java.util.Map		
+	" 
+%>
+
+<%	
+	String host = ElementParameterParser.getValue(node, "__HOST__");
+	String port = ElementParameterParser.getValue(node, "__PORT__");
+	String kp = ElementParameterParser.getValue(node, "__KP__");
+	String kpInstance = ElementParameterParser.getValue(node, "__KP_INSTANCE__");
+	String token = ElementParameterParser.getValue(node, "__TOKEN__");
+	
+	String keepAlive = ElementParameterParser.getValue(node, "__KEEP_ALIVE__");
+	String sibTimeout = ElementParameterParser.getValue(node, "__SIB_TIMEOUT__");
+	String responseTimeout = ElementParameterParser.getValue(node, "__RESPONSE_TIMEOUT__");
+
+%>
+
+	com.indra.sofia2.ssap.kp.config.MQTTConnectionConfig joinConfig_<%=cid%> =
+		new com.indra.sofia2.ssap.kp.config.MQTTConnectionConfig();
+	joinConfig_<%=cid%>.setSibHost(<%=host%>);
+	joinConfig_<%=cid%>.setSibPort(Integer.valueOf(<%=port%>));
+	joinConfig_<%=cid%>.setKeepAliveInSeconds(<%=keepAlive%>);
+	joinConfig_<%=cid%>.setQualityOfService(org.fusesource.mqtt.client.QoS.AT_LEAST_ONCE);
+	joinConfig_<%=cid%>.setSibConnectionTimeout(<%=sibTimeout%>);
+	joinConfig_<%=cid%>.setSsapResponseTimeout(<%=responseTimeout%>);
+
+	com.indra.sofia2.ssap.kp.implementations.mqtt.KpMQTTClient kp_<%=cid%> =
+		new com.indra.sofia2.ssap.kp.implementations.mqtt.KpMQTTClient(joinConfig_<%=cid%>, <%=kp%>, <%=kpInstance%>, <%=token%>);
+	String sessionKey_<%=cid%> = null;
+	
+	try {
+		kp_<%=cid%>.connect();
+		kp_<%=cid%>.disableStatusReport();
+		
+		com.indra.sofia2.ssap.ssap.SSAPMessage joinRequest_<%=cid%> =
+			com.indra.sofia2.ssap.kp.SSAPMessageGenerator.getInstance().generateJoinByTokenMessage(kp_<%=cid%>.getToken(), kp_<%=cid%>.getKpInstance());
+		com.indra.sofia2.ssap.ssap.SSAPMessage joinResponse_<%=cid%>;
+		try {
+			joinResponse_<%=cid%> = kp_<%=cid%>.send(joinRequest_<%=cid%>);
+			sessionKey_<%=cid%> = joinResponse_<%=cid%>.getSessionKey();
+			if( sessionKey_<%=cid%> != null && sessionKey_<%=cid%> != "")
+				System.out.println("Connected with sessionKey: "+ sessionKey_<%=cid%>);
+			else {
+				System.err.println("Error Sofia2 returned no SessionKey: " + joinResponse_<%=cid%>.getBody());
+				throw new com.indra.sofia2.ssap.kp.exceptions.ConnectionToSIBException(joinResponse_<%=cid%>.getBody());
+			}
+		} catch (com.indra.sofia2.ssap.kp.exceptions.ConnectionToSIBException e_<%=cid%>) {
+			System.err.println("Error could not join to Sofia2 SIP: " + e_<%=cid%>.getMessage());
+			e_<%=cid%>.printStackTrace();
+			throw e_<%=cid%>;
+		}
+	
+	} catch (com.indra.sofia2.ssap.kp.exceptions.ConnectionToSIBException e_<%=cid%>) {
+		System.err.println("Error could not connect with Sofia2: " + e_<%=cid%>.getMessage());
+		e_<%=cid%>.printStackTrace();
+		throw e_<%=cid%>;
+	}
+	
+	globalMap.put("sessionKey_<%=cid%>", sessionKey_<%=cid%>);
+	globalMap.put("kp_<%=cid%>", kp_<%=cid%>);
