@@ -107,7 +107,7 @@
       NUM_ROW="30"
       REQUIRED="true"
     >
-      <DEFAULT>"TestSensorTemperatura"</DEFAULT>
+      <DEFAULT>"talendDemo"</DEFAULT>
     </PARAMETER>
     <PARAMETER
       NAME="JSONFIELD"

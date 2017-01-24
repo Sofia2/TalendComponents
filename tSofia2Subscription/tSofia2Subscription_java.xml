@@ -120,7 +120,7 @@
       NUM_ROW="30"
      	SHOW_IF="INFINITE_LOOP == 'false'"
     >
-      <DEFAULT>10*60</DEFAULT>
+      <DEFAULT>60</DEFAULT>
     </PARAMETER>
 
     <PARAMETER
@@ -137,7 +137,7 @@
       NUM_ROW="40"
       REQUIRED="true"
     >
-      <DEFAULT>"TestSensorTemperatura"</DEFAULT>
+      <DEFAULT>"talendDemo"</DEFAULT>
     </PARAMETER>
     
     <PARAMETER
@@ -157,7 +157,7 @@
       REQUIRED="true"
       SHOW_IF="SUBSCRIPTION_TYPE == 'QUERY'"
     >
-      <DEFAULT>"select * from TestSensorTemperatura"</DEFAULT>
+      <DEFAULT>"select * from talendDemo"</DEFAULT>
     </PARAMETER>
     
     <PARAMETER

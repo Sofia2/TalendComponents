@@ -106,7 +106,7 @@
       NUM_ROW="30"
       REQUIRED="true"
     >
-      <DEFAULT>"TestSensorTemperatura"</DEFAULT>
+      <DEFAULT>"talendDemo"</DEFAULT>
     </PARAMETER>
     <PARAMETER
       NAME="SCHEMA"
@@ -123,7 +123,7 @@
       NUM_ROW="40"
       REQUIRED="true"
     >
-      <DEFAULT>"select * from TestSensorTemperatura"</DEFAULT>
+      <DEFAULT>"select * from talendDemo limit 10"</DEFAULT>
     </PARAMETER>
   </PARAMETERS>
   
